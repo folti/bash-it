@@ -3,6 +3,36 @@
 cite about-plugin
 about-plugin 'render commandline output in your browser'
 
+function __unix_open() {
+    local html=$1
+    if [ -n "$DISPLAY" ]; then
+        if [ -n "$BASH_IT_X_BROWSER" ]; then
+            $BASH_IT_X_BROWSER "$1"
+        else
+            (xdg-open "$1" || mimeopen "$1")
+        fi
+    else
+        if [ -n "$BASH_IT_CONSOLE_BROWSER" ]; then
+            $BASH_IT_X_BROWSER "$1"
+        else
+            # common console browsers on linux/unixen
+            (lynx "$1" || links "$1" || links2 "$1" || elinks "$1" || w3m "$1")
+        fi
+    fi
+}
+
+function __browser_open() {
+    case "$OSTYPE" in
+        darwin) open "$1" ;;
+        linux*|bsd*|solaris*)
+            __unix_open "$1"
+            ;;
+        *)
+            echo "Your platform $OSTYPE are not supported currently. Sorry ..."
+            ;;
+    esac
+}
+
 function browser() {
     about 'pipe html to a browser'
     example '$ echo "<h1>hi mom!</h1>" | browser'
@@ -11,7 +41,7 @@ function browser() {
 
     if [ -t 0 ]; then
         if [ -n "$1" ]; then
-            open $1
+            __browser_open "$1"
         else
             reference browser
         fi
@@ -19,7 +49,7 @@ function browser() {
     else
         f="/tmp/browser.$RANDOM.html"
         cat /dev/stdin > $f
-        open $f
+        __browser_open "$f"
     fi
 }
 
