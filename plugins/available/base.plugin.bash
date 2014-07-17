@@ -16,6 +16,24 @@ function ips ()
     fi
 }
 
+# ripped from https://github.com/matthewmccullough/scripts/blob/master/colornetstat
+function colornetstat ()
+{
+    # colorize netstat output
+    local color_red=`echo -e "${echo_red}"`
+    local color_green=`echo -e "${echo_green}"`
+    local color_yellow=`echo -e "${echo_yellow}"`
+    local color_blue=`echo -e "${echo_blue}"`
+    local color_purple=`echo -e "${echo_purple}"`
+    local color_green="$(echo -e ${echo_green})"
+    local color_cyan=`echo -e "${echo_bold_cyan}"`
+    local no_color="$(echo -e ${echo_normal})"
+
+
+    netstat ${@} |sed -e "s/^.* ESTABLISH.*$/${color_green}&${no_color}/; s/^.* LIST.*$/${color_cyan}&${no_color}/; s/^.* *.WAIT$/${color_red}&${no_color}/; s/^.* CLOSING$/${color_red}&${no_color}/; s/^.* SYN.*$/${color_yellow}&${no_color}/; s/^.* FIN.*$/${color_yellow}&${no_color}/; s/^.* *.ACK/${color_yellow}&${no_color}/"
+
+}
+
 function down4me ()
 {
     about 'checks whether a website is down for you, or everybody'
