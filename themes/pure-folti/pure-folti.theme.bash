@@ -15,21 +15,20 @@ SCM_HG_CHAR="${bold_red}☿${normal}"
 
 scm_prompt() {
     scm
-    if [ "${SCM}" = "${SCM_NONE_CHAR}" ] 
-        then 
+    if [ "${SCM}" = "${SCM_NONE}" ]; then
             return
-        else 
-            scm_prompt_vars
-            if [[ $SCM_IS_TAG -eq "1" ]]; then
-                tag=" $SCM_TAG_PREFIX "
-            fi
-            ret="[$SCM_CHAR$SCM_PREFIX$SCM_BRANCH$SCM_STATE$SCM_SUFFIX$tag]"
-            if [[ $SCM == $SCM_GIT ]]; then
-                ret="[$SCM_CHAR$SCM_PREFIX${green}$SCM_BRANCH${yellow}#${SCM_CHANGE:0:6}${normal}$SCM_STATE$SCM_SUFFIX$tag"
-                ret="$ret $SCM_GIT_BEHIND:$SCM_GIT_AHEAD:$SCM_GIT_STASH]"
-            fi
-            echo $ret
-    fi 
+    else
+        scm_prompt_vars
+        if [[ $SCM_IS_TAG -eq "1" ]]; then
+            tag=" $SCM_TAG_PREFIX "
+        fi
+        ret="[$SCM_CHAR$SCM_PREFIX$SCM_BRANCH#$SCM_CHANGE$SCM_STATE$SCM_SUFFIX$tag]"
+        if [[ $SCM == $SCM_GIT ]]; then
+            ret="[$SCM_CHAR$SCM_PREFIX${green}$SCM_BRANCH${yellow}#${SCM_CHANGE:0:6}${normal}$SCM_STATE$SCM_SUFFIX$tag"
+            ret="$ret $SCM_GIT_BEHIND:$SCM_GIT_AHEAD:$SCM_GIT_STASH]"
+        fi
+        echo $ret
+    fi
 }
 
 function last_status_prompt {
