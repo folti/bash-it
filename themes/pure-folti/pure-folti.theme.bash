@@ -19,13 +19,10 @@ scm_prompt() {
             return
     else
         scm_prompt_vars
-        if [[ $SCM_IS_TAG -eq "1" ]]; then
-            tag=" $SCM_TAG_PREFIX "
-        fi
         ret="[$SCM_CHAR$SCM_PREFIX$SCM_BRANCH#$SCM_CHANGE$SCM_STATE$SCM_SUFFIX$tag]"
         if [[ $SCM == $SCM_GIT ]]; then
-            ret="[$SCM_CHAR$SCM_PREFIX${green}$SCM_BRANCH${yellow}#${SCM_CHANGE:0:6}${normal}$SCM_STATE$SCM_SUFFIX$tag"
-            ret="$ret $SCM_GIT_BEHIND:$SCM_GIT_AHEAD:$SCM_GIT_STASH]"
+            ret="[$SCM_CHAR$SCM_PREFIX${green}$SCM_BRANCH${yellow}#${SCM_CHANGE:0:6}${normal}$SCM_STATE$SCM_PREFIX$SCM_PREFIX"
+            ret="$ret$SCM_GIT_BEHIND:$SCM_GIT_AHEAD:$SCM_GIT_STASH]"
         fi
         echo $ret
     fi
@@ -57,6 +54,14 @@ function _folti_set_rgb_color {
     echo  "\[\033[${fg}${bg}${other}m\]"
 }
 
+__get_pwd_len() {
+    local _pth=$PWD
+    case $PWD in
+        ${HOME}/*) _pth="'~'${PWD##${HOME}}";;
+    esac
+    echo ${#_pth}
+}
+
 pure_prompt() {
     local retcode="$?"
     last_status_prompt $retcode
@@ -65,18 +70,30 @@ pure_prompt() {
         *) ps_host="$(color blue bold)\h${normal}";;
     esac
     ps_user="${green}\u${normal}";
-    ps_user_mark="${green}\n$LAST_STATUS_PROMPT $ ${normal}";
+    ps_mark="${green}\n$LAST_STATUS_PROMPT $ ${normal}";
     ps_root="${red}\u${red}";
     ps_root="${red} # ${normal}"
     ps_path="${yellow}\w${normal}";
+    pathlen=$((__get_pwd_hlen))
 
+    local _termwidth=$((COLUMNS - 1))
+    local _prefix=
+    local _user_prefix=
     # make it work
     case $(id -u) in
-        0) PS1="$ps_root@$ps_host$(scm_prompt):$ps_path$ps_root_mark"
+        0) _user_prefix="$ps_root"
             ;;
-        *) PS1="$ps_user@$ps_host$(scm_prompt):$ps_path$ps_user_mark"
+        *) _user_prefix="$ps_user"
             ;;
     esac
+    _prefix="$_user_prefix@$ps_host$(scm_prompt):"
+    PS1="${_prefix}$ps_path$ps_mark"
+    local _width=$((${#_prefix} + ${#ps_path}))
+    if [ $_width -ge ${_termwidth} ]; then
+        PS1="${_prefix}\n$ps_path$ps_mark"
+    fi
 }
 
 PROMPT_COMMAND=pure_prompt;
+
+# vim: ft=sh expandtab tw=80 sw=4
