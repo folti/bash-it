@@ -8,6 +8,8 @@ SCM_GIT_CHAR="${green}±${normal}"
 SCM_SVN_CHAR="${cyan}⑆${normal}"
 SCM_HG_CHAR="${bold_red}☿${normal}"
 
+VIRTUALENV_THEME_PROMPT_COLOR="${cyan}"
+
 ### TODO: openSUSE has already colors enabled, check if those differs from stock
 # LS colors, made with http://geoff.greer.fm/lscolors/
 # export LSCOLORS="Gxfxcxdxbxegedabagacad"
@@ -54,6 +56,22 @@ function _folti_set_rgb_color {
     echo  "\[\033[${fg}${bg}${other}m\]"
 }
 
+function f_virtualenv_prompt {
+    local environ=""
+
+    if [[ -n "$CONDA_DEFAULT_ENV" ]]; then
+        environ="conda: $CONDA_DEFAULT_ENV"
+    elif [[ -n "$VIRTUAL_ENV" ]]; then
+        environ=$(basename "$VIRTUAL_ENV")
+    fi
+
+    if [[ -n "$environ" ]]; then
+        VIRTUALENV_PROMPT=":$(_folti_set_rgb_color - ${VIRTUALENV_THEME_PROMPT_COLOR}){$environ}${normal}"
+    else
+        VIRTUALENV_PROMPT=""
+    fi
+}
+
 __get_pwd_len() {
     local _pth=$PWD
     case $PWD in
@@ -69,6 +87,7 @@ pure_prompt() {
         *256color) ps_host="$(_folti_set_rgb_color 33 - 1)\h${normal}";;
         *) ps_host="$(color blue bold)\h${normal}";;
     esac
+    f_virtualenv_prompt
     ps_user="${green}\u${normal}";
     ps_mark="${green}\n$LAST_STATUS_PROMPT $ ${normal}";
     ps_root="${red}\u${red}";
@@ -86,7 +105,7 @@ pure_prompt() {
         *) _user_prefix="$ps_user"
             ;;
     esac
-    _prefix="$_user_prefix@$ps_host$(scm_prompt):"
+    _prefix="$_user_prefix@$ps_host$VIRTUALENV_PROMPT$(scm_prompt): "
     PS1="${_prefix}$ps_path$ps_mark"
     local _width=$((${#_prefix} + ${#ps_path}))
     if [ $_width -ge ${_termwidth} ]; then
