@@ -88,12 +88,18 @@ pure_prompt() {
         *) ps_host="$(color blue bold)\h${normal}";;
     esac
     f_virtualenv_prompt
-    ps_user="${green}\u${normal}";
-    ps_mark="${green}\n$LAST_STATUS_PROMPT $ ${normal}";
-    ps_root="${red}\u${red}";
-    ps_root="${red} # ${normal}"
-    ps_path="${yellow}\w${normal}";
-    pathlen=$((__get_pwd_hlen))
+    local ps_user="${green}\u${normal}";
+    local ps_mark="${green}\n$LAST_STATUS_PROMPT $ ${normal}";
+    local ps_root="${red}\u${red}";
+    local ps_root="${red} # ${normal}"
+    local ps_path="${yellow}\w${normal}";
+    local pathlen=$((__get_pwd_hlen))
+
+    local _jobs=$(jobs -l | wc -l)
+    local ps_jobs=
+    if [ $_jobs -gt 0 ]; then
+        ps_jobs=":${cyan}[jobs: $_jobs]${normal}"
+    fi
 
     local _termwidth=$((COLUMNS - 1))
     local _prefix=
@@ -105,7 +111,7 @@ pure_prompt() {
         *) _user_prefix="$ps_user"
             ;;
     esac
-    _prefix="$_user_prefix@$ps_host$VIRTUALENV_PROMPT$(scm_prompt): "
+    _prefix="$_user_prefix@$ps_host$VIRTUALENV_PROMPT$(scm_prompt)${ps_jobs}: "
     PS1="${_prefix}$ps_path$ps_mark"
     local _width=$((${#_prefix} + ${#ps_path}))
     if [ $_width -ge ${_termwidth} ]; then
